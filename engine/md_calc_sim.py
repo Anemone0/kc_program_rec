@@ -5,7 +5,7 @@ from scipy.sparse import csr_matrix
 import logging
 
 
-def md_calc_sim(texts, repository_data, topk=1000):
+def md_calc_sim(texts, repository_data, topk=10000):
     """
     :param md_words:
         md_words=[ {"iid",iid, "md_word":md_word} ]

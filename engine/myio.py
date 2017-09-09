@@ -1,3 +1,8 @@
+import os
+
+PYTHON_FILE_PATH = os.path.split(os.path.realpath(__file__))[0]
+
+
 def readfile():
     """
         user_item=[ {"uid":uid, "iid":iid, "ranking":ranking} ]
@@ -52,14 +57,15 @@ def readfile2():
     return user_item, repository_data
 
 
-def readfile3():
+def readfile3(filename):
     """
         user_item=[ {"uid":uid, "iid":iid, "ranking":ranking} ]
         repository_data=[ {"iid":iid, "lang":lang, "md":md, "sc":sc} ]
     """
 
+    hrepo_path = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'hrepo{}.csv'.format(filename))
     repository_data = []
-    with open('../data/hrepo_Large.csv', 'r') as hrepo_file:
+    with open(hrepo_path, 'r') as hrepo_file:
         for each_line in hrepo_file:
             each_list = each_line.split('|')
             if len(each_list) == 3:
