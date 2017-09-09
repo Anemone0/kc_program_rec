@@ -17,7 +17,7 @@ CSVDir = settings.get('CSV_DIR')
 
 
 class MultiCSVItemPipeline(object):
-    SaveTypes = ['UserItem', 'Repo']
+    SaveTypes = ['UserItem', 'Repo', 'RepoReadme', 'RepoSource']
 
     def __init__(self):
         dispatcher.connect(self.spider_opened, signal=signals.spider_opened)
