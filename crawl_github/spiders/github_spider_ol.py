@@ -6,6 +6,7 @@
 # @author x565178035,x565178035@126.com
 # @version 1.0
 # @date 2016-07-13 19:33
+import logging
 
 from scrapy.spiders import CrawlSpider
 from scrapy.http import Request
@@ -38,12 +39,18 @@ class GithubSpider(CrawlSpider):
     start_urls = ['https://github.com/carpedm20?tab=repositories']
 
     def parse(self, response, step=0):
+
+        logging.info(response)
+        person = response.meta.get('person', 0)
         if response.meta.has_key('step'):
             step = response.meta['step']
         else:
             step = 0
-        if step >= 2:
+        if step >= 1:
             return
+        # if person>=10:
+        #     return
+
         '''source'''
         source_repos = response.xpath('//li[contains(@class,"source")]')
         email = None
@@ -72,7 +79,7 @@ class GithubSpider(CrawlSpider):
 
                 yield Request(base_url + "/" + repo_url, callback=self.parse_repo)
 
-                watch_url = base_url +'/'+ repo_url + '/watchers'
+                watch_url = base_url + '/' + repo_url + '/watchers'
                 yield Request(watch_url, meta={"step": step}, callback=self.parse_watch)
                 '''fork'''
                 fork_repos = response.xpath('//li[contains(@class,"fork")]')
@@ -84,7 +91,8 @@ class GithubSpider(CrawlSpider):
                     user_item['action'] = 6
                     yield user_item
                     owner_index = base_url + "/" + repo_owner + "?tab=repositories"
-                    yield Request(owner_index, meta={"step": step + 1}, callback=self.parse)
+                    person+=1
+                    yield Request(owner_index, meta={"step": step + 1, "person":person}, callback=self.parse)
 
                     repo_url = e_repo.xpath('//a[contains(@itemprop, "name codeRepository")]/@href').extract()[0]. \
                         replace("\n", "")
@@ -95,10 +103,10 @@ class GithubSpider(CrawlSpider):
 
             next_url = response.xpath('//a[contains(@class,"next_page")]/@href').extract()
             if len(next_url) >= 1:
-                yield Request(base_url + next_url[0], meta={"step": step}, callback=self.parse)
-
+                yield Request(base_url + next_url[0], meta={"step": step,"person":person}, callback=self.parse)
 
     def parse_watch(self, response):
+        person = response.meta.get('person', 0)
         users = response.xpath('//*[@id="repos"]/ol/li')
         repo_name = response.url.split('/')[-2]
         user_item = UserItem()
@@ -111,10 +119,11 @@ class GithubSpider(CrawlSpider):
             user_item['repo_name'] = repo_name
             user_item['action'] = 3
             yield user_item
+            person+=1
             yield Request(user_url, meta={"step": response.meta['step'] + 1}, callback=self.parse)
 
-
     def parse_star(self, response):
+        person = response.meta.get('person', 0)
         user_name = response.url.split('/')[-1]
         star_repos = response.xpath('//ul[@id="js-repo-list"]/li')
         base_url = 'https://github.com'
@@ -127,11 +136,11 @@ class GithubSpider(CrawlSpider):
             user_item['action'] = 1
             yield user_item
             owner_index = base_url + "/" + repo_owner + "?tab=repositories"
-            yield Request(owner_index, meta={"step": response.meta['step'] + 1}, callback=self.parse)
+            person+=1
+            yield Request(owner_index, meta={"step": response.meta['step'] + 1, "person":person}, callback=self.parse)
             repo_url = e_repo.xpath('//a[contains(@itemprop, "name codeRepository")]/@href').extract()[0]. \
                 replace("\n", "")
             yield Request(base_url + repo_url, callback=self.parse_repo)
-
 
     def parse_repo(self, response):
         print response.url
@@ -152,8 +161,8 @@ class GithubSpider(CrawlSpider):
         yield Request(zip_url, callback=self.save_repo)
         yield repo
 
-
     def save_repo(self, response):
+        logging.info(response)
         file_name = response.url.split('/')[4]
         path = os.path.join(ZIP_DIR, file_name + '.zip')
 

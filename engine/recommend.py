@@ -11,6 +11,5 @@ def recommend(user_ranking, repository_sim, topn=5):
         topn_results.append(sort_sims[0:topn])  # 看下前10个最相似的，第一个是基准数据自身
     return topn_results
 
-
 if __name__ == '__main__':
     pass

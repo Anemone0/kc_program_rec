@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 # -*-coding=utf-8-*-
 from gensim import corpora, models, similarities
+from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import csr_matrix
 import logging
 
+
+def md_calc_sim_sklearn(texts, repository_data):
+    vectorizer = TfidfVectorizer()
+    tfidf = vectorizer.fit_transform(texts)
+    sim_matrix = (tfidf * tfidf.T).A
+    return sim_matrix
 
 def md_calc_sim(texts, repository_data, topk=10000):
     """
@@ -24,36 +31,18 @@ def md_calc_sim(texts, repository_data, topk=10000):
 
     transformed_corpus = corpus_tfidf
     # index 是 gensim.similarities.docsim.MatrixSimilarity 实例
-    # print len(dictionary)
-    index = similarities.Similarity('tmp', transformed_corpus, num_features=len(dictionary))
+    index = similarities.Similarity('tmp', transformed_corpus, num_features=len(dictionary.dfs))
+    # index = similarities.MatrixSimilarity(transformed_corpus)
 
-    row = []
-    col = []
-    data = []
+    # row = []
+    # col = []
+    # data = []
+    sim_matrix = []
     for i in range(len(corpus)):
         # 选择一个基准数据
         ml_bow = corpus[i]
         # 在上面选择的模型数据 lsi 中，计算其他数据与其的相似度
         # ml_lsi = lsi[ml_bow]  # ml_lsi 形式如 (topic_id, topic_value)
         sims = index[ml_bow]  # sims 是最终结果了， index[xxx] 调用内置方法 __getitem__() 来计算ml_lsi
-
-        # 排序，为输出方便
-        sort_sims = sorted(enumerate(sims), key=lambda item: -item[1])
-
-        # 查看结果
-        # 看下前10个最相似的，第一个是基准数据自身
-        k = 0
-        n = 0
-        while n < len(sort_sims):
-            each_result = sort_sims[n]
-            n += 1
-            if repository_data[i]["lang"] == repository_data[each_result[0]]["lang"]:
-                if repository_data[i]["md"] != "0" and repository_data[i]["sc"] != 0:
-                    k += 1
-                    row.append(i)
-                    col.append(each_result[0])
-                    data.append(each_result[1])
-            if k >= topk:
-                break
-    sim_matrix = csr_matrix((data, (row, col)))
+        sim_matrix.append(sims)
     return sim_matrix

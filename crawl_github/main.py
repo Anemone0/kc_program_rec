@@ -8,6 +8,7 @@
 # @date 2016-07-13 16:06
 
 import os
+import logging
 
 def main():
     #  os.system( "scrapy crawl github_spider -L WARNING" )

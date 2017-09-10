@@ -1,6 +1,8 @@
 # coding=utf8
 import os
 
+import time
+
 import myio
 import md_tokenizer
 import logging
@@ -32,13 +34,20 @@ def cache(file_path):
 
 
 class Engine:
-    project_name = '1'
-    choose_num = 10
-    alpha = 7
-    beta = 3
-    similar_num = 1000
+    project_name = '_Mid'
+
+    def __init__(self):
+        self.choose_num = 10
+        self.alpha = 7
+        self.beta = 3
+        self.similar_num = 1000
+
+    @staticmethod
+    def set_project_name(name):
+        Engine.project_name = name
+
     # 每种行为的权值
-    ranking_map = {10: 10, 6: 6, 3: 3, 1: 1}
+    ranking_map = {"10": 10.0, "6": 6.0, "5": 5.0, "3": 3.0, "1": 1.0}
 
     @cache(os.path.join(PYTHON_FILE_PATH, 'tmp', 'user_list{}.pkl'.format(project_name)))
     def get_user_list(self, user_item):
@@ -49,7 +58,7 @@ class Engine:
         return user_list
 
     @cache(os.path.join(PYTHON_FILE_PATH, 'tmp', 'user_ranking{}.pkl'.format(project_name)))
-    def get_user_ranking(self, user_item, user_list, iid2lid, m, n):
+    def get_user_ranking(self, user_item, user_list, iid2lid, n):
         logging.info("transform id")
         col = []
         row = []
@@ -57,7 +66,7 @@ class Engine:
         for each in user_item:
             row.append(user_list.index(each["uid"]))
             col.append(iid2lid[each["iid"]])
-            val.append(float(each["ranking"].strip()))
+            val.append(self.ranking_map[each["ranking"].strip()])
         user_ranking = csr_matrix((val, (row, col)), shape=(len(user_list), n))
         return user_ranking
 
@@ -71,7 +80,7 @@ class Engine:
         logging.info("sc tokenizer")
         sc_words = self.sc_tokenizer(map(lambda e: e["sc"], repository_data))
         logging.info("sc calculate similarity")
-        sc_sim = self.sc_calc_sim(sc_words, repository_data, self.similar_num)
+        sc_sim = self.sc_calc_sim(sc_words, repository_data)
         return sc_sim
 
     @cache(os.path.join(PYTHON_FILE_PATH, 'tmp', 'md_similarity{}.pkl'.format(project_name)))
@@ -79,7 +88,7 @@ class Engine:
         logging.info("md tokenizer")
         md_words = self.md_tokenizer(map(lambda e: e["md"], repository_data))
         logging.info("md calculate similarity")
-        md_sim = self.md_calc_sim(md_words, repository_data, self.similar_num)
+        md_sim = self.md_calc_sim(md_words, repository_data)
         return md_sim
 
     def launch(self):
@@ -89,23 +98,14 @@ class Engine:
         logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
         logging.info("input func")
         user_item, repository_data = self.input_func(self.project_name)
-        """
-        md_words=[ {"iid",iid, "md_word":md_word} ]
-        """
         iid2lid = self.get_iid2lid(repository_data)
 
-        logging.info("md tokenizer")
-        md_words = self.md_tokenizer(map(lambda e: e["md"], repository_data))
-        logging.info("md calculate similarity")
-        md_sim = self.md_calc_sim(md_words, repository_data, self.similar_num)
+        md_sim = self.get_md_similarity(repository_data)
 
-        """
-        sc_words=[ ["sc","word"] ]
-        """
         sc_sim = self.get_sc_similarity(repository_data)
 
         logging.info("add similarity")
-        repository_sim = self.combine(md_sim, sc_sim, self.alpha, self.beta)
+        repository_sim = self.combine(md_sim, sc_sim, repository_data, alpha=self.alpha, beta=self.beta, sim_num=self.similar_num)
         md_sim = sc_sim = None
 
         """
@@ -126,6 +126,12 @@ class Engine:
                                each_recommends[1]))
         logging.info("Output func")
         self.output_func(triple)
+
+    def clear_cache(self):
+        cache_dir = os.path.join(PYTHON_FILE_PATH, 'tmp')
+        for root, dirs, files in os.walk(cache_dir, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
 
     def set_input_func(self, func):
         """
@@ -171,17 +177,20 @@ class Engine:
 
 
 if __name__ == '__main__':
+    t1 = time.time()
     engine = Engine()
-    engine.project_name = '_Mid'
     engine.choose_num = 5
 
     engine.set_input_func(myio.readfile3)
     engine.set_output_func(myio.writefile)
 
-    engine.set_md_tokenizer(md_tokenizer.tokenizer2)
-    engine.set_sc_tokenizer(md_tokenizer.tokenizer2)
-    engine.set_md_calc_sim(md_calc_sim.md_calc_sim)
-    engine.set_sc_calc_sim(md_calc_sim.md_calc_sim)
+    engine.set_md_tokenizer(md_tokenizer.tokenizer_sklearn)
+    engine.set_sc_tokenizer(md_tokenizer.tokenizer_sklearn)
+    engine.set_md_calc_sim(md_calc_sim.md_calc_sim_sklearn)
+    engine.set_sc_calc_sim(md_calc_sim.md_calc_sim_sklearn)
     engine.set_combine(combine.combine)
     engine.set_recommend(recommend.recommend)
+    engine.clear_cache()
     engine.launch()
+    t2 = time.time()
+    print t2 - t1

@@ -5,6 +5,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import logging
 
+
 def tokenizer(courses):
     texts_lower = [[word for word in document.lower().split()] for document in courses]
 
@@ -30,12 +31,17 @@ def tokenizer(courses):
     texts = [[stem for stem in text if stem not in stems_once] for text in texts_stemmed]
     return texts
 
+
 def tokenizer2(courses):
-    texts_lower=[]
+    texts_lower = []
     for document in courses:
-        words=[]
+        words = []
         for word in document.split():
-            if word!='0':
+            if word != '0':
                 words.append(word)
         texts_lower.append(words)
     return texts_lower
+
+
+def tokenizer_sklearn(sentences):
+    return sentences
