@@ -46,8 +46,8 @@ def combine(md_sim, sc_sim, repository_data, sim_num=1000, alpha=0.7, beta=0.3):
     :param beta:
     :return:
     """
-    md_sim_csr = get_csr_matrix(md_sim, sim_num, repository_data)
-    sc_sim_csr = get_csr_matrix(sc_sim, sim_num, repository_data)
+    md_sim_csr = get_csr_matrix(md_sim, topk=sim_num, repository_data=repository_data)
+    sc_sim_csr = get_csr_matrix(sc_sim, topk=sim_num, repository_data=repository_data)
     ret = alpha * md_sim_csr + beta * sc_sim_csr
     return ret
 

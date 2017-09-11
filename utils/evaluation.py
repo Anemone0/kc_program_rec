@@ -6,7 +6,7 @@
 # @author x565178035,x565178035@126.com
 # @version 1.0
 # @date 2017-01-06 18:40
-
+import logging
 import sys
 
 reload(sys)
@@ -18,7 +18,6 @@ item2 = set()
 user_inc = set()
 act1 = set()
 act2 = set()
-
 
 def get_details(train, test):
     global user1
@@ -34,24 +33,20 @@ def get_details(train, test):
             user1.add(e[0])
             item1.add(e[1])
             act1.add((e[0], e[1]))
-    print 'Train User:', len(user1)
-    print 'Train Item:', len(item1)
+    logging.info('Train User:{}'.format(len(user1)))
+    logging.info('Train Item:{}'.format(len(item1)))
     with open(test, 'r') as f:
         for each in f.readlines():
             e = each.split(',')
             user2.add(e[0])
             item2.add(e[1])
             act2.add((e[0], e[1]))
-    print 'Test User:', len(user2)
-    print 'Test Item:', len(item2)
-
-    print act1 & act2
-    print 'User:', len(user1 | user2)
     user_inc = user1 & user2
-    print 'User Inc:', len(user_inc)
-    print 'Item:', len(item1 | item2)
-    print
+    logging.info('Test User:{}'.format(len(user2)))
+    logging.info('Test Item:{}'.format(len(item2)))
 
+    logging.info('User:{}'.format(len(user1 | user2)))
+    logging.info('Item:{}'.format(item1 | item2))
 
 MARK_TO_RANK = {'10': 4, '5': 2, '3': 3, '2': 4}
 
@@ -88,10 +83,8 @@ def accuracy(test, rec):
                 if each in test[each_u].keys():
                     hit += 1
                     break
-    print hit, n
-    print 'accuracy:', hit / n
+    logging.info('Accuray:{}'.format(hit / n))
     return hit / n,
-
 
 def user_cov(test, rec):
     user_num = 0
@@ -105,7 +98,7 @@ def user_cov(test, rec):
                     if each in test[each_u].keys():
                         hit += 1
                         break
-    print 'user cov:', hit, user_num
+    logging.info('User cov: {},{}'.format(hit, user_num))
     return hit, user_num
 
 
@@ -123,9 +116,10 @@ def precision_recall(test, rec):
     p = hit / (rec_num - 1e-10)
     r = hit / (test_num - 1e-10)
     f = 2 * p * r / (p + r - 1e-10)
-    print 'precision:', p
-    print 'recall:', r
-    print 'f-mean:', f
+
+    logging.info('Precision:{}'.format(p))
+    logging.info('Recall:{}'.format(r))
+    logging.info('F-mean:{}'.format(f))
     return p, r, f
 
 
@@ -141,7 +135,7 @@ def diversity(test, rec):
                 inc = float(len(rec_sets[uid1] & rec_sets[uid2]))
                 sum += (1 - inc / max(len(rec_sets[uid1]), len(rec_sets[uid2])))
                 n += 1
-    print 'diversity:', sum / n
+    logging.info('Diversity:{}'.format(sum / n))
     return sum / n,
 
 
@@ -167,14 +161,14 @@ def mAP_mRR(test, rec):
             sAP += ap / len(test[each_u])
     mAP = sAP / n_user
     mRR = sRR / n_user
-    print 'mAP:', mAP
-    print 'mRR:', mRR
+    logging.info('mAP:{}'.format(mAP))
+    logging.info('mRR:{}'.format(mRR))
     return mAP, mRR
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     get_details('../data/train.data', '../data/test.data')
-    #  crontroller('./test.txt','./rec.txt',[mAP_mRR,])
     res = crontroller('../data/test.data', '../data/result.csv', [accuracy, precision_recall, diversity, mAP_mRR])
     for each in res:
         print each

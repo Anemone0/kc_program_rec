@@ -25,7 +25,7 @@ def div(li, ga_file, filename1, filename2):
             each1 = line.replace('\r', '').replace('\n', '').split('|')
             each = [each1[0], each1[1], float(each1[2])]
             if len(each1[0]) != 0 and len(each1[1]) != 0:
-                if random.randint(0, 10) <= 6:
+                if random.randint(0, 10) <= 7:
                 # if (ord(each1[0][0]) + ord(each1[1][0])) % 10 in li or each[2] == 10:
                     if line not in test:
                         train.add(line)

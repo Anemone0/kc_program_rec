@@ -3,6 +3,8 @@ import os
 
 import time
 
+from scipy.sparse import csr_matrix
+
 import myio
 import md_tokenizer
 import logging
@@ -10,8 +12,11 @@ import md_calc_sim
 import combine
 import recommend
 import pickle
-
-from scipy.sparse import csr_matrix
+import json
+import random
+import utils.div
+import utils.evaluation
+import ezSA
 
 PYTHON_FILE_PATH = os.path.split(os.path.realpath(__file__))[0]
 
@@ -41,13 +46,15 @@ class Engine:
         self.alpha = 7
         self.beta = 3
         self.similar_num = 1000
+        # 每种行为的权值
+        self.ranking_map = {"10": 10.0, "6": 6.0, "5": 5.0, "3": 3.0, "1": 1.0}
+        self.settings_path = os.path.join(PYTHON_FILE_PATH, 'engine{}.json'.format(Engine.project_name))
+        self.train_data = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'train.data')
+        self.test_data = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'test.data')
 
     @staticmethod
     def set_project_name(name):
         Engine.project_name = name
-
-    # 每种行为的权值
-    ranking_map = {"10": 10.0, "6": 6.0, "5": 5.0, "3": 3.0, "1": 1.0}
 
     @cache(os.path.join(PYTHON_FILE_PATH, 'tmp', 'user_list{}.pkl'.format(project_name)))
     def get_user_list(self, user_item):
@@ -57,7 +64,7 @@ class Engine:
         user_list = list(user_set)
         return user_list
 
-    @cache(os.path.join(PYTHON_FILE_PATH, 'tmp', 'user_ranking{}.pkl'.format(project_name)))
+    # @cache(os.path.join(PYTHON_FILE_PATH, 'tmp', 'user_ranking{}.pkl'.format(project_name)))
     def get_user_ranking(self, user_item, user_list, iid2lid, n):
         logging.info("transform id")
         col = []
@@ -95,7 +102,6 @@ class Engine:
         """
         :type self: object
         """
-        logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
         logging.info("input func")
         user_item, repository_data = self.input_func(self.project_name)
         iid2lid = self.get_iid2lid(repository_data)
@@ -105,7 +111,8 @@ class Engine:
         sc_sim = self.get_sc_similarity(repository_data)
 
         logging.info("add similarity")
-        repository_sim = self.combine(md_sim, sc_sim, repository_data, alpha=self.alpha, beta=self.beta, sim_num=self.similar_num)
+        repository_sim = self.combine(md_sim, sc_sim, repository_data, alpha=self.alpha, beta=self.beta,
+                                      sim_num=self.similar_num)
         md_sim = sc_sim = None
 
         """
@@ -126,6 +133,90 @@ class Engine:
                                each_recommends[1]))
         logging.info("Output func")
         self.output_func(triple)
+
+    def optimization(self):
+        # ga_file = "../data/ga_with_repo{}.csv".format(Engine.project_name)
+        ga_file = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'ga_with_repo{}.csv'.format(Engine.project_name))
+        utils.div.div([1, 2], ga_file, self.train_data, self.test_data)
+        self.clear_cache()
+        x, res = ezSA.EzSA(self.get_settings(),
+                           self.obj_func,
+                           self.arrise_settings,
+                           max_temperature=10,
+                           iter=10,
+                           delta=0.9)
+        logging.info("Res:{}".format(res))
+        self.save_settings()
+        return res
+
+    def obj_func(self, settings):
+        self.load_settings(settings)
+        self.launch()
+        utils.evaluation.get_details(
+            self.train_data,
+            self.test_data)
+        result_path = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'result.csv')
+        res = utils.evaluation.crontroller(
+            self.test_data,
+            result_path,
+            [utils.evaluation.precision_recall])
+        return 1 / res[0] * 10
+
+    def get_settings(self):
+        settings = {'choose_num': self.choose_num,
+                    'alpha': self.alpha,
+                    'beta': self.beta,
+                    'similar_num': self.similar_num,
+                    'ranking_map': self.ranking_map}
+        return settings
+
+    def save_settings(self):
+        settings = self.get_settings()
+        with open(self.settings_path, 'w') as settings_file:
+            # pickle.dumps(settings,settings_file,)
+            settings_file.write(json.dumps(settings))
+
+    def load_settings(self, settings=None):
+        '''
+
+        :param configure: 关于配置的字典
+
+        :return:
+        '''
+        if not settings:
+            file_content = ''
+            with open(self.settings_path, 'r') as settings_file:
+                for each_line in settings_file.readlines():
+                    file_content += each_line
+            settings = json.loads(file_content)
+        self.choose_num = settings['choose_num']
+        self.alpha = settings['alpha']
+        self.beta = settings['beta']
+        self.similar_num = settings['similar_num']
+        self.ranking_map = settings['ranking_map']
+
+    def arrise_settings(self, settings):
+        settings['alpha'] = random.gauss(settings['alpha'], 1)
+        if settings['alpha'] > 10 or settings['alpha'] <= 0:
+            settings['alpha'] = random.gauss(5, 1)
+        settings['beta'] = 10 - settings['alpha']
+        settings['similar_num'] = random.gauss(settings['similar_num'], 10)
+
+        new_ranking_key = []
+        new_ranking_value = []
+        for key, value in settings['ranking_map'].iteritems():
+            new_ranking_key.append(key)
+            new_value = random.gauss(value, 0.1)
+            if new_value > 10 or new_value <= 0:
+                new_value = random.randrange(1, 9)
+            new_ranking_value.append(new_value)
+        sumary = sum(new_ranking_value)
+        new_ranking_value = map(lambda e: e / sumary * 10, new_ranking_value)
+        new_ranking = {}
+        for i in range(len(new_ranking_key)):
+            new_ranking[new_ranking_key[i]] = new_ranking_value[i]
+        settings['ranking_map'] = new_ranking
+        return settings
 
     def clear_cache(self):
         cache_dir = os.path.join(PYTHON_FILE_PATH, 'tmp')
@@ -177,6 +268,7 @@ class Engine:
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     t1 = time.time()
     engine = Engine()
     engine.choose_num = 5
@@ -190,7 +282,15 @@ if __name__ == '__main__':
     engine.set_sc_calc_sim(md_calc_sim.md_calc_sim_sklearn)
     engine.set_combine(combine.combine)
     engine.set_recommend(recommend.recommend)
-    engine.clear_cache()
+
+    # engine.save_settings()
+    # res = engine.arrise_settings(engine.get_settings())
+    # print res
+    # engine.obj_func(engine.arrise_settings(engine.get_settings()))
+
+    print engine.optimization()
+    # engine.clear_cache()
+    engine.load_settings()
     engine.launch()
     t2 = time.time()
     print t2 - t1
