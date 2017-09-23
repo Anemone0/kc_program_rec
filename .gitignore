@@ -3,3 +3,5 @@
 *.data
 *.pkl
 *.json
+!crawl_github/zip
+!crawl_github/csv

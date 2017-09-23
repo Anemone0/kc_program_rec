@@ -46,7 +46,7 @@ class GithubSpider(CrawlSpider):
             step = response.meta['step']
         else:
             step = 0
-        if step >= 1:
+        if step >= 2:
             return
         # if person>=10:
         #     return
