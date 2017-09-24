@@ -12,7 +12,7 @@ import logging
 
 def main():
     #  os.system( "scrapy crawl github_spider -L WARNING" )
-    os.system("scrapy crawl github_spider_ol")
+    os.system("scrapy crawl --loglevel=INFO github_spider_ol")
 
 if __name__ == '__main__':
     main()

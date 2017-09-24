@@ -36,7 +36,7 @@ class GithubSpider(CrawlSpider):
     #  start_urls=['https://github.com/shougo?tab=repositories']
     #  start_urls=['https://github.com/nicolaiarocci?tab=repositories']
     #  start_urls=['https://github.com/allofthenorthwood?tab=repositories']
-    start_urls = ['https://github.com/carpedm20?tab=repositories']
+    start_urls = ['https://github.com/eastridge?tab=repositories']
 
     def parse(self, response, step=0):
 
