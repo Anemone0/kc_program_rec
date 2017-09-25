@@ -24,7 +24,8 @@ def get_csr_matrix(arr, topk, repository_data):
         while n < len(sort_sims):
             each_result = sort_sims[n]
             n += 1
-            if repository_data[i]["lang"] == repository_data[each_result[0]]["lang"]:
+            # 指两个项目的语言有交集
+            if len(repository_data[i]["lang"] & repository_data[each_result[0]]["lang"]) >= 1:
                 if repository_data[each_result[0]]["md"] != "0" and repository_data[each_result[0]]["sc"] != "0":
                     k += 1
                     row.append(i)

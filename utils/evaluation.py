@@ -19,6 +19,7 @@ user_inc = set()
 act1 = set()
 act2 = set()
 
+
 def get_details(train, test):
     global user1
     global item1
@@ -48,7 +49,8 @@ def get_details(train, test):
     logging.info('User:{}'.format(len(user1 | user2)))
     logging.info('Item:{}'.format(item1 | item2))
 
-MARK_TO_RANK = {'10': 4, '5': 2, '3': 3, '2': 4}
+
+MARK_TO_RANK = {'10': 4, '6': 3, '5': 1, '3': 2, '2': 4}
 
 
 def crontroller(test_file, rec_file, func_list):
@@ -85,6 +87,7 @@ def accuracy(test, rec):
                     break
     logging.info('Accuray:{}'.format(hit / n))
     return hit / n,
+
 
 def user_cov(test, rec):
     user_num = 0

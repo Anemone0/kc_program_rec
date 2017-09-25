@@ -39,7 +39,7 @@ def cache(file_path):
 
 
 class Engine:
-    project_name = '_Mid'
+    project_name = '_step_2'
 
     def __init__(self):
         self.choose_num = 10
@@ -79,6 +79,11 @@ class Engine:
 
     @cache(os.path.join(PYTHON_FILE_PATH, 'tmp', 'iid2lid{}.pkl'.format(project_name)))
     def get_iid2lid(self, repository_data):
+        """
+        数据文件的项目id转换成矩阵的id
+        :param repository_data:
+        :return:
+        """
         iid2lid = dict([(each['iid'], repository_data.index(each)) for each in repository_data])
         return iid2lid
 
@@ -273,7 +278,7 @@ if __name__ == '__main__':
     engine = Engine()
     engine.choose_num = 5
 
-    engine.set_input_func(myio.readfile3)
+    engine.set_input_func(myio.readfile4)
     engine.set_output_func(myio.writefile)
 
     engine.set_md_tokenizer(md_tokenizer.tokenizer_sklearn)
@@ -288,9 +293,9 @@ if __name__ == '__main__':
     # print res
     # engine.obj_func(engine.arrise_settings(engine.get_settings()))
 
-    print engine.optimization()
-    # engine.clear_cache()
-    engine.load_settings()
+    # print engine.optimization()
+    engine.clear_cache()
+    # engine.load_settings()
     engine.launch()
     t2 = time.time()
     print t2 - t1

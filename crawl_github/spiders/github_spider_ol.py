@@ -69,15 +69,10 @@ class GithubSpider(CrawlSpider):
                 user_item['repo_name'] = user_name + '/' + repo_name
                 user_item['action'] = 10
                 yield user_item
-                # repo_url = e_repo.xpath('//a[contains(@itemprop, "name codeRepository")]/@href').extract()[0].replace(
-                #     "\n", "")
                 repo_url = user_name + "/" + repo_name
                 star_url = base_url + repo_url + '/stargazers'
-                # print repo_name
                 fork_url = base_url + repo_url + '/network/members'
-
                 yield Request(base_url + "/" + repo_url, callback=self.parse_repo)
-
                 watch_url = base_url + '/' + repo_url + '/watchers'
                 yield Request(watch_url, meta={"step": step}, callback=self.parse_watch)
             '''fork'''
@@ -95,14 +90,14 @@ class GithubSpider(CrawlSpider):
 
                 repo_url = e_repo.xpath('div/span/a/@href').extract()[0]. \
                     replace("\n", "")
-                print repo_url
                 yield Request(base_url + repo_url, callback=self.parse_repo)
-                '''started'''
-                yield Request(base_url + "/stars/" + user_name, meta={"step": step}, callback=self.parse_star)
 
             next_url = response.xpath('//a[contains(@class,"next_page")]/@href').extract()
             if len(next_url) >= 1:
                 yield Request(base_url + next_url[0], meta={"step": step, "person": person}, callback=self.parse)
+            else:
+                '''started'''
+                yield Request(base_url + "/stars/" + user_name, meta={"step": step}, callback=self.parse_star)
 
     def parse_watch(self, response):
         person = response.meta.get('person', 0)
@@ -123,26 +118,34 @@ class GithubSpider(CrawlSpider):
 
     def parse_star(self, response):
         person = response.meta.get('person', 0)
-        user_name = response.url.split('/')[-1]
-        star_repos = response.xpath('//ul[@id="js-repo-list"]/li')
+        user_name = response.url.split('/')[-1].split('?')[0]
+        star_repos = response.xpath('//ul[contains(@class,"repo-list")]/li')
         base_url = 'https://github.com'
         user_item = UserItem()
         for e_repo in star_repos:
             repo_owner, repo_name = e_repo.xpath('div/h3/a/@href').extract()[0].split('/')[1:]
 
-            user_item['user_name'] = user_name
-            user_item['repo_name'] = repo_owner + '/' + repo_name
-            user_item['action'] = 1
-            yield user_item
-            owner_index = base_url + "/" + repo_owner + "?tab=repositories"
-            person += 1
-            yield Request(owner_index, meta={"step": response.meta['step'] + 1, "person": person}, callback=self.parse)
-            repo_url = e_repo.xpath('//a[contains(@itemprop, "name codeRepository")]/@href').extract()[0]. \
-                replace("\n", "")
-            yield Request(base_url + repo_url, callback=self.parse_repo)
+            if repo_owner != user_name:
+                user_item['user_name'] = user_name
+                user_item['repo_name'] = repo_owner + '/' + repo_name
+                user_item['action'] = 1
+                yield user_item
+                owner_index = base_url + "/" + repo_owner + "?tab=repositories"
+                person += 1
+                yield Request(owner_index, meta={"step": response.meta['step'] + 1, "person": person},
+                              callback=self.parse)
+                repo_url = e_repo.xpath('div/h3/a/@href').extract()[0]. \
+                    replace("\n", "")
+                yield Request(base_url + repo_url, callback=self.parse_repo)
+
+        next_url = response.xpath('//a[contains(text(),"Next")]/@href').extract()
+        if len(next_url) >= 1:
+            yield Request(next_url[0], meta={"step": response.meta['step'] + 1, "person": person},
+                          callback=self.parse_star)
+
+
 
     def parse_repo(self, response):
-        print response.url
         repo = Repo()
         xpath_name = '//*[@id="js-repo-pjax-container"]/div[1]/div[1]/h1/strong/a/text()'
         xpath_desc = '//span[contains(@itemprop,"about")]/text()'

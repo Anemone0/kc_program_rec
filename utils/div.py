@@ -22,11 +22,10 @@ def div(li, ga_file, filename1, filename2):
     test = set()
     with open(os.path.join(PYTHON_FILE_PATH, '..', 'data', ga_file), 'r') as f:
         for line in f.readlines():
-            each1 = line.replace('\r', '').replace('\n', '').split('|')
+            each1 = line.replace('\r', '').replace('\n', '').split(',')
             each = [each1[0], each1[1], float(each1[2])]
             if len(each1[0]) != 0 and len(each1[1]) != 0:
-                if random.randint(0, 10) <= 7:
-                # if (ord(each1[0][0]) + ord(each1[1][0])) % 10 in li or each[2] == 10:
+                if random.randint(0, 10) <= 6 or each[2] == 10:
                     if line not in test:
                         train.add(line)
                 else:
@@ -34,14 +33,14 @@ def div(li, ga_file, filename1, filename2):
     print train & test
     with open(filename1, 'w') as ff:
         for line in train:
-            ff.write('{0},{1},{2}'.format(*line.split('|')))
+            ff.write('{0},{1},{2}'.format(*line.split(',')))
     with open(filename2, 'w') as ff:
         for line in test:
-            ff.write('{0},{1},{2}'.format(*line.split('|')))
+            ff.write('{0},{1},{2}'.format(*line.split(',')))
 
 
 if __name__ == '__main__':
-    ga_file="ga_with_repo_Mid.csv"
+    ga_file = "ga_with_repo_step_2.csv"
     div([1, 2], ga_file, '../data/train.data', '../data/test.data')
     div([1, 2], ga_file, '../data/train1.data', '../data/test1.data')
     div([3, 4], ga_file, '../data/train2.data', '../data/test2.data')
