@@ -159,8 +159,25 @@ class GithubSpider(CrawlSpider):
 
         repo['language'] = "|".join(response.xpath(xpath_lang).extract())
         repo['url'] = response.url
+
+        repo_readme = RepoReadme()
+        repo_source = RepoSource()
         zip_url = base_url + response.xpath(xpath_download_url).extract()[0]
-        yield Request(zip_url, callback=self.save_repo)
+        file_name = response.url.split('/')[4]
+        path = os.path.join(ZIP_DIR, file_name + '.zip')
+        try:
+            zipfile.ZipFile(path, 'r')
+            readme, source = executezip.analyse(path)
+            repo_readme = RepoReadme()
+            repo_readme['name'] = file_name
+            repo_readme['readme'] = readme
+            yield repo_readme
+            repo_source = RepoSource()
+            repo_source['name'] = file_name
+            repo_source['source'] = source
+            yield repo_source
+        except Exception:
+            yield Request(zip_url, callback=self.save_repo)
         yield repo
 
     def save_repo(self, response):
@@ -168,11 +185,8 @@ class GithubSpider(CrawlSpider):
         file_name = response.url.split('/')[4]
         path = os.path.join(ZIP_DIR, file_name + '.zip')
 
-        try:
-            zipfile.ZipFile(path, 'r')
-        except Exception:
-            with open(path, 'wb') as f:
-                f.write(response.body)
+        with open(path, 'wb') as f:
+            f.write(response.body)
         readme, source = executezip.analyse(path)
         repo_readme = RepoReadme()
         repo_readme['name'] = file_name
