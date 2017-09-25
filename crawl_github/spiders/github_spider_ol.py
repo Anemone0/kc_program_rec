@@ -11,6 +11,8 @@ import logging
 from scrapy.spiders import CrawlSpider
 from scrapy.http import Request
 from scrapy.selector import Selector
+from twisted.internet.defer import CancelledError
+
 from crawl_github.items import *
 from scrapy.utils.project import get_project_settings
 import os.path
@@ -177,7 +179,18 @@ class GithubSpider(CrawlSpider):
             repo_source['source'] = source
             yield repo_source
         except Exception:
-            yield Request(zip_url, callback=self.save_repo)
+            try:
+                yield Request(zip_url, callback=self.save_repo)
+            except CancelledError:
+                repo_readme = RepoReadme()
+                repo_readme['name'] = file_name
+                repo_readme['readme'] = '0'
+                yield repo_readme
+                repo_source = RepoSource()
+                repo_source['name'] = file_name
+                repo_source['source'] = '0'
+                yield repo_source
+
         yield repo
 
     def save_repo(self, response):
