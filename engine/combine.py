@@ -33,7 +33,7 @@ def get_csr_matrix(arr, topk, repository_data):
                     val.append(each_result[1])
             if k >= topk:
                 break
-    ret = csr_matrix((val, (row, col)))
+    ret = csr_matrix((val, (row, col)), shape=arr.shape)
     return ret
 
 

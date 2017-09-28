@@ -92,7 +92,7 @@ class GithubSpider(CrawlSpider):
 
                 repo_url = e_repo.xpath('div/span/a/@href').extract()[0]. \
                     replace("\n", "")
-                yield Request(base_url + repo_url, callback=self.parse_repo)
+                # yield Request(base_url + repo_url, callback=self.parse_repo)
 
             next_url = response.xpath('//a[contains(@class,"next_page")]/@href').extract()
             if len(next_url) >= 1:
@@ -138,7 +138,7 @@ class GithubSpider(CrawlSpider):
                               callback=self.parse)
                 repo_url = e_repo.xpath('div/h3/a/@href').extract()[0]. \
                     replace("\n", "")
-                yield Request(base_url + repo_url, callback=self.parse_repo)
+                # yield Request(base_url + repo_url, callback=self.parse_repo)
 
         next_url = response.xpath('//a[contains(text(),"Next")]/@href').extract()
         if len(next_url) >= 1:

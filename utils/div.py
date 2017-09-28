@@ -25,6 +25,7 @@ def div(li, ga_file, filename1, filename2):
             each1 = line.replace('\r', '').replace('\n', '').split(',')
             each = [each1[0], each1[1], float(each1[2])]
             if len(each1[0]) != 0 and len(each1[1]) != 0:
+                # if random.randint(0, 10) <= 6 or each[2]==10:
                 if random.randint(0, 10) <= 6:
                     if line not in test:
                         train.add(line)
@@ -40,7 +41,7 @@ def div(li, ga_file, filename1, filename2):
 
 
 if __name__ == '__main__':
-    ga_file = "ga_with_repo_step_nowatch.csv"
+    ga_file = "ga_with_repo_step_large_noten.csv"
     div([1, 2], ga_file, '../data/train.data', '../data/test.data')
     div([1, 2], ga_file, '../data/train1.data', '../data/test1.data')
     div([3, 4], ga_file, '../data/train2.data', '../data/test2.data')

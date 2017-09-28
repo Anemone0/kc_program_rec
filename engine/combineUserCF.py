@@ -2,7 +2,7 @@
 # -*-coding=utf-8-*-
 
 rec_dict = {}
-alpha = 500
+alpha = 200
 beta = 1
 
 

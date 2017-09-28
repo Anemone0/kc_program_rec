@@ -39,7 +39,7 @@ def cache(file_path):
 
 
 class Engine:
-    project_name = '_step_nowatch'
+    project_name = '_step_large_noten'
 
     def __init__(self):
         self.choose_num = 10
@@ -278,6 +278,9 @@ if __name__ == '__main__':
     t1 = time.time()
     engine = Engine()
     engine.choose_num = 5
+    engine.alpha = 8
+    engine.beta = 2
+    engine.similar_num = 5000
 
     engine.set_input_func(myio.readfile4)
     engine.set_output_func(myio.writefile)

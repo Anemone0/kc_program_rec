@@ -11,7 +11,6 @@ def recommend(user_ranking, repository_sim, topn=5):
         topn_results.append(sort_sims[0:topn])  # 看下前10个最相似的，第一个是基准数据自身
     return topn_results
 
-
 def recommend2(user_ranking, repository_sim, topn=5):
     predict_ranking = user_ranking * repository_sim
     matrix_results = predict_ranking - user_ranking * 987654321
