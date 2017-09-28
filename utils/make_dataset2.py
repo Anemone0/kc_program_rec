@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*-coding=utf-8-*-
-# 只考虑用户自己创建的项目
 import sys
 import os
 
@@ -8,7 +7,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 PYTHON_FILE_PATH = os.path.split(os.path.realpath(__file__))[0]
-PROJECT = 'step_nowatch'
+PROJECT = 'step_2'
 CSV_DIR = os.path.join(PYTHON_FILE_PATH, '..', 'crawl_github', 'csv', PROJECT)
 
 REPO_SET = []
@@ -30,8 +29,8 @@ def get_users_and_repos():
             action, user_name, repo_name = each.rstrip().split(',')
             user_set.add(user_name)
             USER_HEHAVIOR.add((user_name, repo_name.split('/')[-1], action))
-            if int(action) == 10:
-                repo_set.add(repo_name.split('/')[-1])
+            # if int(action) == 10:
+            repo_set.add(repo_name.split('/')[-1])
     USER_SET = list(user_set)
     REPO_SET = list(repo_set)
 

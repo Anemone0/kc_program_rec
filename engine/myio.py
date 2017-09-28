@@ -98,7 +98,7 @@ def readfile4(filename):
     repository_data = []
     with open(hrepo_path, 'r') as hrepo_file:
         for each_line in hrepo_file:
-            each_list = each_line.split(',')
+            each_list = each_line.rstrip().split(',')
             if len(each_list) == 4:
                 repository_data.append({"iid": each_list[0],
                                         "lang": set(each_list[1].split("|")),
@@ -107,7 +107,7 @@ def readfile4(filename):
     user_item = []
     with open('../data/train.data', 'r') as ga_file:
         for each_line in ga_file:
-            each_list = each_line.split(',')
+            each_list = each_line.rstrip().split(',')
             if len(each_list) == 3:
                 user_item.append({"uid": each_list[0],
                                   "iid": each_list[1],

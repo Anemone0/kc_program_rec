@@ -116,7 +116,7 @@ class GithubSpider(CrawlSpider):
             user_item['action'] = 3
             yield user_item
             person += 1
-            yield Request(user_url, meta={"step": response.meta['step'] + 1}, callback=self.parse)
+            # yield Request(user_url, meta={"step": response.meta['step'] + 1}, callback=self.parse)
 
     def parse_star(self, response):
         person = response.meta.get('person', 0)

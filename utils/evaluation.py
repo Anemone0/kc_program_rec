@@ -50,7 +50,7 @@ def get_details(train, test):
     logging.info('Item:{}'.format(item1 | item2))
 
 
-MARK_TO_RANK = {'10': 4, '6': 3, '5': 1, '3': 2, '2': 4}
+MARK_TO_RANK = {'10': 4, '6': 3, '5': 1, '3': 2, '2': 4, '1': 1}
 
 
 def crontroller(test_file, rec_file, func_list):
@@ -173,14 +173,14 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     get_details('../data/train.data', '../data/test.data')
     res = crontroller('../data/test.data', '../data/result.csv', [accuracy, precision_recall, diversity, mAP_mRR])
-    for each in res:
-        print each
-    print
-    # res=crontroller('./test.data','./usercf_rec.csv',[accuracy,precision_recall,diversity,mAP_mRR])
     # for each in res:
     #     print each
     # print
-    # res=crontroller('./test.data','./itemcf_rec.csv',[accuracy,precision_recall,diversity,mAP_mRR])
+    res = crontroller('../data/test.data', '../data/usercf_rec.csv', [accuracy, precision_recall, diversity, mAP_mRR])
+    # for each in res:
+    #     print each
+    # print
+    res = crontroller('../data/test.data', '../data/combine.csv', [accuracy, precision_recall, diversity, mAP_mRR])
     # for each in res:
     #     print each
     # print

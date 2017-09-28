@@ -39,7 +39,7 @@ def cache(file_path):
 
 
 class Engine:
-    project_name = '_step_2'
+    project_name = '_step_nowatch'
 
     def __init__(self):
         self.choose_num = 10
@@ -47,7 +47,8 @@ class Engine:
         self.beta = 3
         self.similar_num = 1000
         # 每种行为的权值
-        self.ranking_map = {"10": 10.0, "6": 6.0, "5": 5.0, "3": 3.0, "1": 1.0}
+        self.ranking_map = {"10": 10.0, "6": 6.0, "5": 5.0, "3": 5.0, "1": 1.0}
+        # self.ranking_map = {"10": 1, "6": 1.0, "5": 1.0, "3": 1.0, "1": 1.0}
         self.settings_path = os.path.join(PYTHON_FILE_PATH, 'engine{}.json'.format(Engine.project_name))
         self.train_data = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'train.data')
         self.test_data = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'test.data')
