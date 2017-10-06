@@ -41,7 +41,7 @@ def div(li, ga_file, filename1, filename2):
 
 
 if __name__ == '__main__':
-    ga_file = "ga_with_repo_step_large_noten.csv"
+    ga_file = "ga_with_repo_step_3.csv"
     div([1, 2], ga_file, '../data/train.data', '../data/test.data')
     div([1, 2], ga_file, '../data/train1.data', '../data/test1.data')
     div([3, 4], ga_file, '../data/train2.data', '../data/test2.data')

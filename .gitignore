@@ -1,6 +1,7 @@
 *.csv
 *.zip
 *.data
+*.bk
 *.pkl
 *.json
 !crawl_github/zip

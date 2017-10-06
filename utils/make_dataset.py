@@ -8,7 +8,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 PYTHON_FILE_PATH = os.path.split(os.path.realpath(__file__))[0]
-PROJECT = 'step_nowatch'
+PROJECT = 'step_3'
 CSV_DIR = os.path.join(PYTHON_FILE_PATH, '..', 'crawl_github', 'csv', PROJECT)
 
 REPO_SET = []
@@ -34,6 +34,8 @@ def get_users_and_repos():
                 repo_set.add(repo_name.split('/')[-1])
     USER_SET = list(user_set)
     REPO_SET = list(repo_set)
+    print len(USER_SET)
+    print len(REPO_SET)
 
     with open(os.path.join(CSV_DIR, 'Repo.csv'), 'r') as repo_file:
         for each in repo_file.readlines()[1:]:
@@ -73,8 +75,6 @@ def make_dataset():
                 ))
 
     with open(os.path.join(CSV_DIR, 'hrepo_{}.csv'.format(PROJECT)), 'w') as ga_file:
-        print len(REPO_SET)
-        print len(REPO_DICT)
         for each in REPO_DICT.keys():
             ga_file.write('{0},{1},{2},{3}\n'.format(
                 REPO_SET.index(REPO_DICT[each]['name']),
@@ -85,6 +85,9 @@ def make_dataset():
 
 
 if __name__ == '__main__':
+
     get_users_and_repos()
     make_dataset()
+    print len(USER_SET)
+    print len(REPO_SET)
     # print REPO_DICT[REPO_DICT.keys()[1]]

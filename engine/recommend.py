@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*-coding=utf-8-*-
+
+from sklearn.preprocessing import normalize
+
 def recommend(user_ranking, repository_sim, topn=5):
     predict_ranking = user_ranking * repository_sim
+    # predict_ranking = normalize(predict_ranking, norm='max', axis=1)
     matrix_results = predict_ranking - user_ranking * 987654321
     # 排序，为输出方便
     topn_results = []

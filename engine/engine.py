@@ -11,7 +11,7 @@ import logging
 import md_calc_sim
 import combine
 import recommend
-import pickle
+import cPickle as pickle
 import json
 import random
 import utils.div
@@ -39,7 +39,7 @@ def cache(file_path):
 
 
 class Engine:
-    project_name = '_step_large_noten'
+    project_name = '_step_3'
 
     def __init__(self):
         self.choose_num = 10
@@ -47,7 +47,7 @@ class Engine:
         self.beta = 3
         self.similar_num = 1000
         # 每种行为的权值
-        self.ranking_map = {"10": 10.0, "6": 6.0, "5": 5.0, "3": 5.0, "1": 1.0}
+        self.ranking_map = {"10": 10.0, "6": 6.0, "5": 5.0, "3": 3.0, "1": 3.0, "-10": -10}
         # self.ranking_map = {"10": 1, "6": 1.0, "5": 1.0, "3": 1.0, "1": 1.0}
         self.settings_path = os.path.join(PYTHON_FILE_PATH, 'engine{}.json'.format(Engine.project_name))
         self.train_data = os.path.join(PYTHON_FILE_PATH, '..', 'data', 'train.data')
@@ -228,7 +228,8 @@ class Engine:
         cache_dir = os.path.join(PYTHON_FILE_PATH, 'tmp')
         for root, dirs, files in os.walk(cache_dir, topdown=False):
             for name in files:
-                os.remove(os.path.join(root, name))
+                if Engine.project_name in name:
+                    os.remove(os.path.join(root, name))
 
     def set_input_func(self, func):
         """
@@ -280,7 +281,7 @@ if __name__ == '__main__':
     engine.choose_num = 5
     engine.alpha = 8
     engine.beta = 2
-    engine.similar_num = 5000
+    engine.similar_num = 100
 
     engine.set_input_func(myio.readfile4)
     engine.set_output_func(myio.writefile)

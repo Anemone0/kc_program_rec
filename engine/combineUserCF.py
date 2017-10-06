@@ -15,7 +15,7 @@ def combineUserCF(alpha, beta, k):
             user_dict[item] = alpha * float(rank)
             rec_dict[user] = user_dict
 
-    with open('../data/result.csv', 'r') as f:
+    with open('../data/rec.csv', 'r') as f:
         for each_line in f.readlines():
             user, item, rank = each_line.rstrip().split(',')
             user_dict = rec_dict.get(user, {})

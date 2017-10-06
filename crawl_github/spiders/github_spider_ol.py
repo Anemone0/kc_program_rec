@@ -24,6 +24,7 @@ settings = get_project_settings()
 ZIP_DIR = os.path.join(PYTHON_FILE_PATH, "..", "zip")
 
 base_url = 'https://github.com'
+DEPTH = 3  # 控制迭代深度
 
 
 class GithubSpider(CrawlSpider):
@@ -48,7 +49,7 @@ class GithubSpider(CrawlSpider):
             step = response.meta['step']
         else:
             step = 0
-        if step >= 2:
+        if step >= DEPTH:
             return
         # if person>=10:
         #     return
@@ -76,7 +77,7 @@ class GithubSpider(CrawlSpider):
                 fork_url = base_url + repo_url + '/network/members'
                 yield Request(base_url + "/" + repo_url, callback=self.parse_repo)
                 watch_url = base_url + '/' + repo_url + '/watchers'
-                yield Request(watch_url, meta={"step": step}, callback=self.parse_watch)
+                # yield Request(watch_url, meta={"step": step}, callback=self.parse_watch)
             '''fork'''
             fork_repos = response.xpath('//li[contains(@class,"fork")]')
             for e_repo in fork_repos:
@@ -144,8 +145,6 @@ class GithubSpider(CrawlSpider):
         if len(next_url) >= 1:
             yield Request(next_url[0], meta={"step": response.meta['step'] + 1, "person": person},
                           callback=self.parse_star)
-
-
 
     def parse_repo(self, response):
         repo = Repo()

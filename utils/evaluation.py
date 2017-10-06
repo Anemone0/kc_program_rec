@@ -47,10 +47,10 @@ def get_details(train, test):
     logging.info('Test Item:{}'.format(len(item2)))
 
     logging.info('User:{}'.format(len(user1 | user2)))
-    logging.info('Item:{}'.format(item1 | item2))
+    logging.info('Item:{}'.format(len(item1 | item2)))
 
 
-MARK_TO_RANK = {'10': 4, '6': 3, '5': 1, '3': 2, '2': 4, '1': 1}
+MARK_TO_RANK = {'10': 1, '6': 2, '5': 2, '3': 2, '2': 2, '1': 3}
 
 
 def crontroller(test_file, rec_file, func_list):
@@ -181,6 +181,7 @@ if __name__ == '__main__':
     #     print each
     # print
     res = crontroller('../data/test.data', '../data/combine.csv', [accuracy, precision_recall, diversity, mAP_mRR])
+    res = crontroller('../data/test.data', '../data/rec.csv', [accuracy, precision_recall, diversity, mAP_mRR])
     # for each in res:
     #     print each
     # print
